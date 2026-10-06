@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "VLPSO-XAI on PISA 2018: leakage-proof rebuild"
+title: "A survey-aware evaluation protocol for feature selection on PISA 2018: VLPSO benchmark (code)"
 message: "If you use this software, please cite the accompanying article."
 type: software
 authors:

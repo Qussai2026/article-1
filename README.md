@@ -1,6 +1,38 @@
-# VLPSO-XAI on PISA 2018 — leakage-proof rebuild
+# A survey-aware evaluation protocol for feature selection on PISA 2018 (VLPSO benchmark)
 
-Reproducible analysis code for *An Explainable AI Framework for Student Performance Prediction Using Variable-Length Particle Swarm Optimization in Educational Data Mining* (revision submitted to *Applied System Innovation*). The submitted version contained outcome leakage: the mathematics score and all thirty-plus plausible-value columns remained inside the feature matrix, so the reported AUC of 1.0000 was an artefact. This repository rebuilds the analysis around a nested, school-grouped, leakage-guarded design and reports the honest — considerably lower — results. See [`CHANGELOG_REVISION.md`](CHANGELOG_REVISION.md) for every change and its numerical consequence, and [`RESPONSE_TO_EDITOR.md`](RESPONSE_TO_EDITOR.md) for the point-by-point reply.
+Reproducible analysis code for the article *A Survey-Aware Evaluation Protocol for Feature Selection in Educational Data Mining: Variable-Length Particle Swarm Optimisation Benchmarked on PISA 2018* (second-round revision, *Applied System Innovation*, manuscript asi-4471852).
+
+The code implements a leakage-guarded, school-grouped nested evaluation of classifiers and feature selectors on the Spanish PISA 2018 sample: a predictor allowlist enforced by exception, outcome categories derived from each of the ten plausible values and combined by Rubin's rules, Fay-BRR standard errors, two permutation nulls, a 16-arm selector comparison (VLPSO, binary PSO, filters, wrappers, embedded methods and VLPSO ablations), replicated SHAP/LIME explanations and external validation on Portugal. [`CHANGELOG_REVISION.md`](CHANGELOG_REVISION.md) records every change and its numerical consequence; [`HANDOVER_R2.md`](HANDOVER_R2.md) documents the round-2 run.
+
+---
+
+## Round-2 analyses (manuscript R2)
+
+The round-2 analyses are enumerated as *cells* in [`config/revision_r2.yaml`](config/revision_r2.yaml) and run with [`scripts/cells.py`](scripts/cells.py). Each cell writes its outputs atomically with a seed derived from its identifier, so a run can be interrupted, resumed or split across machines.
+
+```bash
+export VLPSO_PROJECT_ROOT="$PWD"                      # PISA 2018 student file in data/raw/
+python scripts/cells.py manifest                      # 12,507 cells
+python scripts/cells.py run --kinds eda,shap,ext,perm --workers 8
+python scripts/cells.py run --kinds brr --workers 8   # after shap
+python scripts/cells.py run --kinds vlstab,sel --workers 8 [--shard i/n]
+python scripts/cells.py reconcile                     # completed vs configured
+python scripts/cells.py aggregate                     # -> results/r2_tables/*.csv
+```
+
+The aggregate outputs of the run reported in the manuscript (no student-level data) are on the branches `r2-results-a` to `r2-results-d`; `python scripts/cells.py merge --sources <clone>/round2 ...` reassembles them, and `aggregate` rebuilds every table.
+
+| Manuscript item | Cells | Table produced by `aggregate` |
+|---|---|---|
+| Exploratory analysis (Tables 1–3) | `eda` | `cells/eda/*` |
+| Selector comparison (Tables 9–10, Figures 2–3) | `sel` (12,000) | `sel_summary.csv`, `sel_contrasts.csv`, `sel_frequency.csv`, `sel_convergence.csv` |
+| VLPSO seeds and sensitivity (Table 11) | `vlstab` (165) | `vlstab_seeds.csv`, `vlstab_sensitivity.csv` |
+| Permutation nulls (Table 8) | `perm` (131) | `perm_summary.csv`, `perm_decomposition.csv` |
+| Replicated SHAP and LIME (Table 12, Figures 4–5) | `shap` (150) | `shap_importance.csv`, `shap_agreement.csv`, `lime_*.csv` |
+| Fay-BRR standard errors (Table 7) | `brr` (30) | `brr_summary.csv` |
+| External validation, Portugal (Table 13) | `ext` (30) | `ext_summary.csv` |
+
+The headline nested cross-validation (Table 7) is produced by `scripts/run_all.py --config default` (notebooks 00–02 below).
 
 ---
 
@@ -27,7 +59,7 @@ unnecessary if you just want the results.
 | 06 | [Explainability](notebooks/06_explainability.ipynb) | comments 7, 8 | 1 h | 3 h | CPU |
 | 07 | [Manuscript assets](notebooks/07_generate_manuscript_tables.ipynb) | comment 10 | 5 min | 5 min | CPU |
 
-Colab badges are embedded at the top of each notebook. Replace `Qussai2026` in the badge URLs after publishing.
+Colab badges are embedded at the top of each notebook. Badges open the notebooks from this repository's `main` branch.
 
 ---
 
@@ -199,11 +231,11 @@ To force a clean re-run:
 
 ```bash
 git clone https://github.com/Qussai2026/article-1.git
-cd vlpso-xai-pisa
+cd article-1
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 export VLPSO_PROJECT_ROOT="$PWD"
-pytest -q          # 104 tests, no PISA data required
+pytest -q          # 220 tests, no PISA data required
 ```
 
 ---
@@ -221,12 +253,12 @@ src/vlpso_xai/
   reporting/     tables, figures, manifest
 notebooks/       00-07, Colab-ready, outputs stripped
 scripts/         run_all.py, make_manuscript_assets.py, build_codebook.py, make_verification_extract.py
-tests/           104 tests, synthetic data only
+tests/           220 tests, synthetic data only
 ```
 
 ---
 
-## Reproducing each manuscript table
+## Round-1 pipeline outputs (headline nested CV)
 
 | Table | Produced by |
 |---|---|
@@ -262,32 +294,19 @@ See [`CITATION.cff`](CITATION.cff).
 
 ## Verification
 
-[`VERIFICATION_REPORT.md`](VERIFICATION_REPORT.md) records the outcome of every
-check, including the ones that failed. Headlines:
-
-* **309 tests pass**, on synthetic data, no PISA microdata required.
-* Leakage guard raises on outcome, plausible-value, weight, design, identifier
-  and 20 adversarial derived/encoded column names, with no false positives.
-* Unrestricted permutation returns **AUC 0.5029** (n = 20). The pipeline is clean.
-* Two quick-mode runs with the same seed produce **byte-identical** hashes for
-  all 140 artefacts.
-* An independent adversarial audit found 15 defects in this rebuild; **10 are
-  fixed** (M2 and M4 most recently), 4 remain open and are listed with
-  severities, plus one — M5 — partially closed.
-
-Not yet done: a cold-start Colab run end to end, the SHAP/LIME numbers, and the
-manuscript edits for editor comments 8 and 10.
+* **220 tests pass** on synthetic data; no PISA microdata are required.
+* The leakage guard raises on outcome, plausible-value, weight, design and identifier columns and on adversarial derived names.
+* Unrestricted permutation null: mean AUC **0.4989** over 100 draws; within-school null: **0.6188** over 30 draws (manuscript Table 8).
+* End-to-end reproduction: the 150 explanation cells refit the headline inner loop and recover the same model family in 150/150 folds and the identical outer-fold AUC in 131/150 (maximum difference 4.1e-4).
+* 1,157 cells computed independently on two machines returned identical AUCs and selected subsets.
+* [`VERIFICATION_REPORT.md`](VERIFICATION_REPORT.md) records the round-1 checks.
 
 ## Known limitations
 
-Stated plainly, because the previous version of this work overclaimed.
-
-1. **Single country, single cycle.** Spain, PISA 2018. Portugal is held out as an external test set, but two Western-European systems do not establish general transfer.
-2. **Cross-sectional, observational data. No causal identification.** SHAP and LIME describe how a fitted model uses a variable. They do not show that the variable causes achievement or that changing it would change outcomes. A SHAP decision plot has no time axis.
-3. **Feature selection is unstable.** VLPSO shares only ~24% of its selected features across outer folds. Any statement about "the" selected feature set is a statement about a modal tendency, not a stable result.
-4. **The proposed optimiser does not outperform its baselines** on current evidence. It scores below ordinary binary PSO and below using all features, and the variable-length mechanism performs worse than shrink-only. The contribution is the evaluation protocol and the codebook-grounded explainability analysis, not the optimiser.
-5. **Plausible values dominate the uncertainty.** The fraction of missing information is 0.54, so more than half the variance in the performance estimate comes from measurement uncertainty in proficiency rather than from sampling.
-6. **Proficiency categories are unstable.** 69.7% of students change category depending on which plausible value is used. The three-class framing is a coarsening of a continuous, uncertain quantity.
-7. **Computational budget.** Permutation tests and the per-PV repetition are expensive; where a reduced budget was used it is stated in the results tables rather than silently applied.
-8. **The wrapper fitness is evaluated on a stratified subsample** of each training fold, because k-NN is O(n²). The final model is always refitted on the complete training fold.
-9. **School-level questionnaire data is not merged.** It requires codebook documentation we do not currently hold, and adding items without a documentary source is the defect this revision exists to correct.
+1. **Two systems, one cycle.** Spain, PISA 2018, with Portugal as an external test set; transfer to other systems is not established.
+2. **Cross-sectional, observational data; no causal identification.** SHAP and LIME describe how a fitted model uses a variable, not what would follow from changing it.
+3. **VLPSO does not improve prediction.** In the 16-arm comparison no selector improved on the full predictor set; VLPSO kept four to six of 31 items at a loss of 0.026–0.037 in AUC and did not differ significantly from binary PSO. Its value on these data is compression at a quantified cost.
+4. **Swarm selections are unstable relative to filters.** Nogueira stability 0.37–0.49 for VLPSO against 0.70–0.98 for most filter and embedded selectors; selected items are not interpreted.
+5. **Plausible values dominate the uncertainty.** The fraction of missing information is 0.47–0.60, and 69.7% of students change proficiency band across plausible values.
+6. **The wrapper fitness is evaluated on a stratified subsample** (3,000 students, school-grouped folds) because k-NN is O(n²); the downstream model is refitted on the complete training fold.
+7. **School questionnaire data are not merged**; only the student file is used.

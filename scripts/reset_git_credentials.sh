@@ -36,7 +36,7 @@ git config --global --unset credential.helper 2>/dev/null || true
 echo "==> Cleared."
 echo
 echo "Next push will prompt for credentials:"
-echo "   Username : your GitHub username (Qussai2026)"
+echo "   Username : your GitHub username"
 echo "   Password : a Personal Access Token, NOT your account password"
 echo
 echo "Create one at https://github.com/settings/tokens"

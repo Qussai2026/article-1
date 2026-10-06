@@ -7,11 +7,11 @@ touching numbers.
 
 | What | Where |
 |---|---|
-| Code | `github.com/Qussai2026/article-1`, branch `fix/audit-m2-m4-aggregation` (pushed; the round-1 brief's "local only" was stale — the branch was already on GitHub) |
+| Code | `github.com/Qussai2026/article-1`, branch `main` |
 | Round-2 configuration | `config/revision_r2.yaml` |
 | Cell runner | `scripts/cells.py` (`manifest`, `run`, `reconcile`, `aggregate`, `publish`, `merge`) |
 | Round-2 library code | `src/vlpso_xai/experiments/`, `selection/{embedded,wrappers,tuned}.py` |
-| Round-2 outputs (non-student-level only) | branches `r2-results-a` … `r2-results-d`, folder `round2/` |
+| Round-2 outputs (non-student-level only) | branches `r2-results-a` … `r2-results-d` of the same repository, folder `round2/` |
 | Changelog | `CHANGELOG_REVISION.md` §R2 |
 | Reviewer report | `reviewers report .docx` (project folder) |
 | Round-1 authoritative headline run | `results-3/` (project folder; never leaves the author's machine) |
