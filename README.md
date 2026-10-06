@@ -1,6 +1,6 @@
 # A survey-aware evaluation protocol for feature selection on PISA 2018 (VLPSO benchmark)
 
-Reproducible analysis code for the article *A Survey-Aware Evaluation Protocol for Feature Selection in Educational Data Mining: Variable-Length Particle Swarm Optimisation Benchmarked on PISA 2018* (second-round revision, *Applied System Innovation*, manuscript asi-4471852).
+Reproducible analysis code for the article *A Survey-Aware Evaluation Protocol for Feature Selection in Educational Data Mining: Variable-Length Particle Swarm Optimisation Benchmarked on PISA 2018* (second-round revision, *Applied System Innovation*, manuscript asi-4471852). Archived at Zenodo: [10.5281/zenodo.23181755](https://doi.org/10.5281/zenodo.23181755).
 
 The code implements a leakage-guarded, school-grouped nested evaluation of classifiers and feature selectors on the Spanish PISA 2018 sample: a predictor allowlist enforced by exception, outcome categories derived from each of the ten plausible values and combined by Rubin's rules, Fay-BRR standard errors, two permutation nulls, a 16-arm selector comparison (VLPSO, binary PSO, filters, wrappers, embedded methods and VLPSO ablations), replicated SHAP/LIME explanations and external validation on Portugal. [`CHANGELOG_REVISION.md`](CHANGELOG_REVISION.md) records every change and its numerical consequence; [`HANDOVER_R2.md`](HANDOVER_R2.md) documents the round-2 run.
 
